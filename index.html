@@ -1,0 +1,1764 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Five Cash - Plataforma Financiera</title>
+  <meta name="description" content="Plataforma integral de gestión financiera, tesorería, nómina, estado de resultados y centro de configuraciones por jerarquía.">
+  <meta property="og:title" content="Five Cash - Plataforma Financiera">
+  <meta property="og:description" content="Plataforma integral de gestión financiera, tesorería, nómina, estado de resultados y centro de configuraciones por jerarquía.">
+  
+  <!-- Tipografía Google Font Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Motor de Gráficos Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Hoja de Estilos CSS Externa Vinculada Limpiamente -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- ============================================================== -->
+    <!-- BARRA LATERAL DE NAVEGACIÓN (SIDEBAR)                          -->
+    <!-- ============================================================== -->
+    <aside class="sidebar" id="mainSidebar">
+      <div class="brand-wrapper">
+        <a href="#" class="brand" onclick="switchTab('dashboard')">
+          <div class="brand-icon">📈</div>
+          <div class="brand-info">
+            <h2>Five Cash</h2>
+            <span>Suite Financiera</span>
+          </div>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Navegación Principal</div>
+        <ul class="menu-list">
+          <li data-role-req="administradora,empleado,tecnico">
+            <a class="menu-item active" data-tab="dashboard" onclick="switchTab('dashboard', this)">
+              <span class="item-icon">📊</span>
+              <span>Panel General</span>
+            </a>
+          </li>
+          <li data-role-req="empleado,tecnico">
+            <a class="menu-item" data-tab="turno-empleado" onclick="switchTab('turno-empleado', this)">
+              <span class="item-icon">📋</span>
+              <span>Mi Turno y Rendición</span>
+              <span class="nav-role-pill employee-pill">Empleado</span>
+            </a>
+          </li>
+          <li data-role-req="administradora,empleado,tecnico">
+            <a class="menu-item" data-tab="cuentas" onclick="switchTab('cuentas', this)">
+              <span class="item-icon">🏛️</span>
+              <span>Cuentas Bancarias</span>
+            </a>
+          </li>
+          <li data-role-req="administradora,empleado,tecnico">
+            <a class="menu-item" data-tab="transacciones" onclick="switchTab('transacciones', this)">
+              <span class="item-icon">🔄</span>
+              <span>Transacciones</span>
+            </a>
+          </li>
+          <li data-role-req="administradora,empleado,tecnico">
+            <a class="menu-item" data-tab="pagos" onclick="switchTab('pagos', this)">
+              <span class="item-icon">💳</span>
+              <span>Pagos y Cobros</span>
+            </a>
+          </li>
+          <li data-role-req="administradora,tecnico">
+            <a class="menu-item" data-tab="nomina" onclick="switchTab('nomina', this)">
+              <span class="item-icon">👥</span>
+              <span>Empleados y Nómina</span>
+              <span class="badge" id="menuBadgeEmpleados" style="margin-left: auto; font-size: 0.72rem; padding: 2px 7px; background: rgba(59, 130, 246, 0.15); color: var(--accent-primary);">0</span>
+              <span class="nav-role-pill admin-pill">Admin</span>
+            </a>
+          </li>
+          <li data-role-req="administradora,tecnico">
+            <a class="menu-item" data-tab="informes" onclick="switchTab('informes', this)">
+              <span class="item-icon">📈</span>
+              <span>Informes y P&amp;L</span>
+              <span class="nav-role-pill admin-pill">Admin</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="nav-section-title" style="margin-top: 14px;">Ajustes del Sistema</div>
+        <ul class="menu-list">
+          <li>
+            <a class="menu-item" data-tab="configuraciones" onclick="switchTab('configuraciones', this)">
+              <span class="item-icon">⚙️</span>
+              <span>Configuraciones</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="backend-indicator">
+          <div>
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText" style="font-weight: 600;">Sistema Activo / Seguro</span>
+          </div>
+          <span style="color: var(--accent-primary); font-family: monospace; font-size: 0.7rem;">v2.5</span>
+        </div>
+
+        <!-- Cuando hay sesión iniciada -->
+        <div class="user-mini-card auth-only-logged-in" id="sidebarUserCard" style="cursor: default;" title="Perfil del usuario activo">
+          <div class="user-avatar" id="sidebarAvatar">LM</div>
+          <div class="user-meta" style="flex:1;">
+            <div class="user-name" id="sidebarUserName">Laura Méndez</div>
+            <div id="sidebarRoleBadge"><span class="role-badge role-administradora">👑 Administradora</span></div>
+          </div>
+          <button class="btn-logout" onclick="cerrarSesion()" title="Cerrar sesión activa" style="padding: 5px 8px; font-size: 0.75rem;">
+            🚪 Salir
+          </button>
+        </div>
+
+        <!-- Cuando NO hay sesión iniciada (Cerrada) -->
+        <div class="auth-only-logged-out" id="sidebarLoggedOutCard" style="flex-direction: column; gap: 8px; padding: 6px 0;">
+          <button class="btn btn-primary btn-sm" onclick="openModal('modalLogin')" style="width: 100%; justify-content: center;">
+            🔑 Iniciar Sesión
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="openModal('modalRegistro')" style="width: 100%; justify-content: center;">
+            ✨ Crear Cuenta
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ============================================================== -->
+    <!-- ÁREA DE CONTENIDO PRINCIPAL (MAIN WRAPPER)                     -->
+    <!-- ============================================================== -->
+    <div class="main-wrapper">
+
+      <!-- Cabecera Superior (Topbar) -->
+      <header class="topbar">
+        <div class="header-left">
+          <button class="menu-toggle-btn" onclick="toggleSidebar()" aria-label="Abrir menú lateral">
+            ☰
+          </button>
+          <div class="header-workspace-title">
+            <span class="workspace-label">Plataforma</span>
+            <span class="workspace-name" id="topbarWorkspaceTitle">Gestión Financiera</span>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <!-- Elementos visibles ÚNICAMENTE cuando la sesión está CERRADA -->
+          <div class="auth-only-logged-out" id="topbarLoggedOutGroup" style="gap: 8px; align-items: center;">
+            <button class="btn btn-secondary btn-sm" onclick="openModal('modalLogin')">
+              🔑 Iniciar Sesión
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="openModal('modalRegistro')">
+              ✨ Crear Cuenta
+            </button>
+          </div>
+
+          <!-- Elementos visibles ÚNICAMENTE cuando la sesión está INICIADA -->
+          <div class="auth-only-logged-in" id="topbarLoggedInGroup" style="gap: 12px; align-items: center;">
+            <div class="company-badge">
+              <div class="company-name" id="companyNameHeader">Mi Empresa</div>
+              <div id="headerRoleBadge"><span class="role-badge role-administradora">👑 Administradora</span></div>
+            </div>
+
+            <!-- Botón de Salir / Cerrar Sesión Funcional -->
+            <button class="btn-logout" id="btnLogoutMain" onclick="cerrarSesion()" title="Cerrar sesión activa" style="font-weight: 700;">
+              🚪 Salir
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Banner de Aviso de Mantenimiento (Controlado por Técnico) -->
+      <div id="maintenanceAlertBanner" style="display: none; padding: 10px 24px 0;"></div>
+
+      <!-- ============================================================ -->
+      <!-- PESTAÑA 1: PANEL GENERAL (DASHBOARD)                         -->
+      <!-- ============================================================ -->
+      <section id="tab-dashboard" class="tab-content active-tab">
+        <div class="section-header">
+          <div class="header-title">
+            <h1>Panel de Control: <span id="dashboardTitleEmpresa">Empresa Ejemplo S.A.</span></h1>
+            <p id="currentDate">Cargando fecha actual...</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary" onclick="openModal('modalTransferencia')">
+              ⇄ Transferir Fondos
+            </button>
+            <button class="btn btn-primary" onclick="openModal('modalPagoDash')">
+              + Transacción Rápida
+            </button>
+          </div>
+        </div>
+
+        <!-- Rejilla de Métricas Principales -->
+        <div class="metrics-grid">
+          <div class="metric-card" style="--card-accent: var(--accent-primary);">
+            <div class="metric-header">
+              <span class="metric-title">Saldo Total Efectivo</span>
+              <div class="metric-icon-badge">💵</div>
+            </div>
+            <div class="metric-value" id="valSaldo">$0.00</div>
+            <div class="metric-sub" id="cuentaSubtext">0 Cuentas Registradas</div>
+            <div class="metric-footer">📌 Capital disponible para operaciones inmediatas.</div>
+          </div>
+
+          <div class="metric-card" style="--card-accent: var(--accent-success);">
+            <div class="metric-header">
+              <span class="metric-title">Ingresos del Periodo</span>
+              <div class="metric-icon-badge" style="color: var(--accent-success);">↗</div>
+            </div>
+            <div class="metric-value" style="color: var(--accent-success);" id="valIngresos">$0.00</div>
+            <div class="metric-sub">Facturación y cobros confirmados</div>
+            <div class="metric-footer">📌 Entradas registradas en el mes.</div>
+          </div>
+
+          <div class="metric-card" style="--card-accent: var(--accent-danger);">
+            <div class="metric-header">
+              <span class="metric-title">Gastos del Periodo</span>
+              <div class="metric-icon-badge" style="color: var(--accent-danger);">↘</div>
+            </div>
+            <div class="metric-value" style="color: var(--accent-danger);" id="valGastos">$0.00</div>
+            <div class="metric-sub">Nómina, proveedores y servicios</div>
+            <div class="metric-footer">📌 Egresos y deducciones acumuladas.</div>
+          </div>
+
+          <div class="metric-card" style="--card-accent: var(--accent-warning);">
+            <div class="metric-header">
+              <span class="metric-title">Compromisos por Pagar</span>
+              <div class="metric-icon-badge" style="color: var(--accent-warning);">⏰</div>
+            </div>
+            <div class="metric-value" style="color: var(--accent-warning);" id="valVencimientos">$0.00</div>
+            <div class="metric-sub">Cuentas por liquidar programadas</div>
+            <div class="metric-footer">📌 Pasivos de corto plazo pendientes.</div>
+          </div>
+        </div>
+
+        <!-- Gráficos y Alertas -->
+        <div class="dashboard-grid-charts">
+          <div class="card">
+            <div class="card-title">
+              <span>Flujo de Caja Mensual</span>
+              <span class="tag-pill">En Tiempo Real</span>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="lineChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <span>Distribución de Gastos</span>
+              <span class="tag-pill">Por Categoría</span>
+            </div>
+            <div class="chart-wrapper" style="display:flex; align-items:center; justify-content:center;">
+              <canvas id="doughnutChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla Resumen y Cuentas Vinculadas -->
+        <div class="dashboard-grid-bottom">
+          <div class="card">
+            <div class="card-title">
+              <span>Últimos Movimientos Financieros</span>
+              <button class="btn btn-secondary btn-sm" onclick="switchTab('transacciones')">Ver Todas →</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Concepto</th>
+                    <th>Categoría</th>
+                    <th>Tipo</th>
+                    <th>Monto</th>
+                  </tr>
+                </thead>
+                <tbody id="txBodyDash">
+                  <tr><td colspan="5" class="empty-state">No hay transacciones registradas aún.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <span>Cuentas Conectadas</span>
+              <button class="btn btn-secondary btn-sm" onclick="openModal('modalCuenta')">+ Agregar</button>
+            </div>
+            <div id="bankList" style="display: flex; flex-direction: column; gap: 10px;">
+              <p class="empty-state">Sin cuentas conectadas.</p>
+            </div>
+            <div class="card-title" style="margin-top: 20px; font-size: 0.95rem;">
+              <span>Alertas del Sistema</span>
+            </div>
+            <div id="alertContainer" style="display: flex; flex-direction: column; gap: 8px;">
+              <p class="empty-state">Sin alertas pendientes.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- PESTAÑA: MI TURNO Y RENDICIÓN OPERATIVA (EMPLEADO / TÉCNICO) -->
+      <!-- ============================================================ -->
+      <section id="tab-turno-empleado" class="tab-content">
+        <div class="section-header">
+          <div class="header-title">
+            <h1>📋 Mi Turno de Caja y Rendición Operativa</h1>
+            <p>Espacio exclusivo para Colaboradores: arqueo de turno, registro de comprobantes de gastos y recibo confidencial de nómina.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary" onclick="openModal('modalPagoDash')">
+              + Venta / Entrada de Caja
+            </button>
+            <button class="btn btn-primary" onclick="cerrarTurnoCaja()">
+              🔒 Arqueo / Cierre de Turno
+            </button>
+          </div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-title">Fondo de Apertura de Caja</div>
+            <div class="metric-value" id="turnoFondoInicial" style="color: #38bdf8;">$1,500.00</div>
+            <div class="metric-sub">Base en efectivo asignada para operar</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Ventas / Cobros del Turno</div>
+            <div class="metric-value" id="turnoVentasCobros" style="color: var(--accent-success);">$0.00</div>
+            <div class="metric-sub" id="turnoNumVentas">0 ventas registradas</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Gastos Rendidos / Salidas</div>
+            <div class="metric-value" id="turnoGastosRendidos" style="color: var(--accent-danger);">$0.00</div>
+            <div class="metric-sub" id="turnoNumGastos">0 tickets comprobados</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Efectivo en Caja Estimado</div>
+            <div class="metric-value" id="turnoBalanceCaja">$1,500.00</div>
+            <div class="metric-sub">Fondo + Entradas - Comprobantes</div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- Formulario rápido de rendición de comprobante -->
+          <div class="card">
+            <div class="card-title">
+              <span>🧾 Registrar Comprobante / Gasto Operativo de Turno</span>
+            </div>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">
+              Como colaborador operativo, registra aquí los gastos de transporte, suministros o pagos en efectivo realizados durante tu turno.
+            </p>
+            <form onsubmit="guardarGastoTurnoEmpleado(event)" style="display:flex; flex-direction:column; gap:12px;">
+              <div class="form-group">
+                <label for="empGastoConcepto">Concepto del Gasto / Compra</label>
+                <input type="text" id="empGastoConcepto" class="form-control" placeholder="Ej. Combustible moto de entrega, Envío de paquetería #382" required>
+              </div>
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                <div class="form-group">
+                  <label for="empGastoMonto">Monto Pagado ($)</label>
+                  <input type="number" id="empGastoMonto" class="form-control" placeholder="0.00" step="0.01" min="0.01" required>
+                </div>
+                <div class="form-group">
+                  <label for="empGastoFolio">N° Folio / Ticket</label>
+                  <input type="text" id="empGastoFolio" class="form-control" placeholder="FAC-8921 o TK-102">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="empGastoCategoria">Categoría del Gasto</label>
+                <select id="empGastoCategoria" class="filter-select">
+                  <option value="Operativo">Gasto Operativo de Campo</option>
+                  <option value="Servicios">Servicios Básicos / Fletes</option>
+                  <option value="Proveedores">Compra Urgente a Proveedor</option>
+                  <option value="Otros">Otro Gasto de Caja</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">
+                ✅ Rendir Comprobante a Caja
+              </button>
+            </form>
+          </div>
+
+          <!-- Recibo de Nómina Personal Confidencial del Empleado -->
+          <div class="card">
+            <div class="card-title">
+              <span>📄 Mi Comprobante de Nómina Individual</span>
+              <span class="badge badge-pagado">Confidencial</span>
+            </div>
+            <div class="employee-receipt-box">
+              <div class="employee-receipt-watermark">💼</div>
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                <div>
+                  <div style="font-weight:700; font-size:1.05rem; color:#fff;" id="reciboNombreEmpleado">Carlos Ruiz</div>
+                  <div style="font-size:0.8rem; color:var(--text-muted);" id="reciboPuestoEmpleado">Ejecutivo de Operaciones y Ventas</div>
+                </div>
+                <span class="role-badge role-empleado">💼 Empleado</span>
+              </div>
+              <hr style="border-color: rgba(255,255,255,0.08); margin: 10px 0;">
+              <div style="display:flex; flex-direction:column; gap:8px; font-size:0.85rem;">
+                <div style="display:flex; justify-content:space-between;">
+                  <span style="color:var(--text-muted);">Sueldo Base Quincenal:</span>
+                  <span style="font-weight:600;">$18,500.00</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                  <span style="color:var(--text-muted);">Bonos Puntualidad y Metas (+):</span>
+                  <span style="font-weight:600; color:var(--accent-success);">+$1,500.00</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                  <span style="color:var(--text-muted);">Retenciones IMSS / Impuestos (-):</span>
+                  <span style="font-weight:600; color:var(--accent-danger);">-$1,850.00</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1); font-size:1rem; font-weight:700;">
+                  <span style="color:#fff;">Neto a Recibir:</span>
+                  <span style="color:#38bdf8;">$18,150.00</span>
+                </div>
+              </div>
+              <div style="margin-top:14px; font-size:0.75rem; color:var(--text-muted); background:rgba(0,0,0,0.25); padding:8px 10px; border-radius:6px; border-left:3px solid #38bdf8;">
+                🔒 <strong>Privacidad Laboral Garantizada</strong>: Este recibo es estrictamente privado y solo lo puedes consultar tú y la Administradora. No tienes visibilidad de los salarios de otros compañeros de la empresa.
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="imprimirReciboEmpleado()" style="margin-top:12px; width:100%; justify-content:center;">
+                🖨️ Imprimir / Guardar Mi Comprobante
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de comprobantes rendidos en el turno -->
+        <div class="card" style="margin-top:20px;">
+          <div class="card-title">
+            <span>Bitácora de Comprobantes Rendidos en este Turno</span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Fecha y Hora</th>
+                  <th>Folio / Ticket</th>
+                  <th>Concepto</th>
+                  <th>Categoría</th>
+                  <th>Monto Pagado</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="turnoGastosBody">
+                <tr id="emptyTurnoRow"><td colspan="6" class="empty-state">No se han registrado comprobantes de gastos en este turno.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- PESTAÑA 2: CUENTAS BANCARIAS                                 -->
+      <!-- ============================================================ -->
+      <section id="tab-cuentas" class="tab-content">
+        <div class="section-header">
+          <div class="header-title">
+            <h1>🏛️ Cuentas Bancarias y Tesorería</h1>
+            <p>Control centralizado de cuentas corrientes, tarjetas de crédito, inversiones y caja chica.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary" onclick="openModal('modalTransferencia')">
+              ⇄ Transferir Fondos
+            </button>
+            <button class="btn btn-primary" onclick="openModal('modalCuenta')">
+              + Vincular Cuenta
+            </button>
+          </div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card" style="--card-accent: var(--accent-success);">
+            <div class="metric-title">Saldo Líquido Consolidado</div>
+            <div class="metric-value" style="color: var(--accent-success);" id="valSaldoTotalCta">$0.00</div>
+            <div class="metric-sub" id="subCuentasActivas">0 Cuentas Vinculadas</div>
+          </div>
+
+          <div class="metric-card" style="--card-accent: var(--accent-danger);">
+            <div class="metric-title">Crédito Utilizado / Pasivos</div>
+            <div class="metric-value" style="color: var(--accent-danger);" id="valCreditoTotalCta">$0.00</div>
+            <div class="metric-sub">Líneas de crédito operativas</div>
+          </div>
+
+          <div class="metric-card" style="--card-accent: var(--accent-primary);">
+            <div class="metric-title">Entidades Financieras</div>
+            <div class="metric-value" id="valTotalBancosCta">0</div>
+            <div class="metric-sub">Bancos y cajas auxiliares</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>Bóveda de Cuentas y Tarjetas</span>
+          </div>
+          <div class="accounts-grid" id="accountsGrid">
+            <div class="empty-state" style="grid-column: 1 / -1;">No hay cuentas registradas.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- PESTAÑA 3: TRANSACCIONES                                     -->
+      <!-- ============================================================ -->
+      <section id="tab-transacciones" class="tab-content">
+        <div class="section-header">
+          <div class="header-title">
+            <h1>🔄 Registro de Transacciones y Movimientos</h1>
+            <p>Historial auditado de ingresos, egresos y transferencias entre cuentas corporativas.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary" onclick="exportarCSV()">
+              📥 Exportar CSV
+            </button>
+            <button class="btn btn-primary" onclick="openModal('modalTx')">
+              + Nueva Transacción
+            </button>
+          </div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-title">Ingresos Totales (+)</div>
+            <div class="metric-value" style="color: var(--accent-success);" id="valTotalIngresosTx">$0.00</div>
+            <div class="metric-sub" id="subNumIngresosTx">0 Entradas registradas</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-title">Egresos Totales (-)</div>
+            <div class="metric-value" style="color: var(--accent-danger);" id="valTotalGastosTx">$0.00</div>
+            <div class="metric-sub" id="subNumGastosTx">0 Salidas registradas</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-title">Flujo Neto Resultante</div>
+            <div class="metric-value" id="valFlujoNetoTx">$0.00</div>
+            <div class="metric-sub" id="subTotalTxCount">0 Movimientos totales</div>
+          </div>
+        </div>
+
+        <div class="controls-bar">
+          <input type="text" class="form-control" id="txSearch" placeholder="🔍 Buscar por concepto..." style="flex: 1; min-width: 200px;" onkeyup="filtrarTablaTx()">
+          <select class="filter-select" id="txTypeFilter" onchange="filtrarTablaTx()">
+            <option value="todos">Todos los Tipos</option>
+            <option value="ingreso">Solo Ingresos (+)</option>
+            <option value="egreso">Solo Egresos (-)</option>
+          </select>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>Libro Diario de Transacciones</span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th>Concepto / Cuenta</th>
+                  <th>Categoría</th>
+                  <th>Monto</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody id="txTableBody">
+                <tr id="emptyTxRow"><td colspan="6" class="empty-state">No hay transacciones registradas.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- PESTAÑA 4: PAGOS Y COBROS                                    -->
+      <!-- ============================================================ -->
+      <section id="tab-pagos" class="tab-content">
+        <div class="section-header">
+          <div class="header-title">
+            <h1>💳 Cuentas por Cobrar y Cuentas por Pagar</h1>
+            <p>Control de facturas a crédito, compromisos con proveedores y flujo proyectado.</p>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modalPagoProgramado')">
+            + Programar Compromiso
+          </button>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-title">Cuentas por Pagar (Pendientes)</div>
+            <div class="metric-value" style="color: var(--accent-warning);" id="valPorPagar">$0.00</div>
+            <div class="metric-sub" id="subNumPagar">0 Pagos pendientes</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-title">Cuentas por Cobrar (Clientes)</div>
+            <div class="metric-value" style="color: var(--accent-primary);" id="valPorCobrar">$0.00</div>
+            <div class="metric-sub" id="subNumCobrar">0 Cobros pendientes</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-title">Compromisos Vencidos</div>
+            <div class="metric-value" style="color: var(--accent-danger);" id="valVencidos">$0.00</div>
+            <div class="metric-sub" id="subNumVencidos">0 En alerta urgente</div>
+          </div>
+        </div>
+
+        <div class="controls-bar">
+          <input type="text" class="form-control" id="pagoSearch" placeholder="🔍 Buscar acreedor o cliente..." style="flex: 1; min-width: 200px;" onkeyup="filtrarTablaPagos()">
+          <select class="filter-select" id="pagoStatusFilter" onchange="filtrarTablaPagos()">
+            <option value="todos">Todos los Estados</option>
+            <option value="Pendiente">Solo Pendientes</option>
+            <option value="Pagado">Solo Pagados</option>
+            <option value="Vencido">Solo Vencidos</option>
+          </select>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>Agenda de Vencimientos</span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Vencimiento</th>
+                  <th>Naturaleza</th>
+                  <th>Beneficiario / Cliente</th>
+                  <th>Estado</th>
+                  <th>Monto</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="pagosTableBody">
+                <tr id="emptyPagosRow"><td colspan="6" class="empty-state">No hay pagos o cobros programados.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- PESTAÑA 5: GESTIÓN DE NÓMINA                                 -->
+      <!-- ============================================================ -->
+      <section id="tab-nomina" class="tab-content">
+        <div id="nominaRestrictedScreen" class="role-lock-screen" style="display: none;">
+          <div class="role-lock-icon">🔒</div>
+          <div class="role-lock-title">Acceso Confidencial: Nómina y Salarios de Colaboradores</div>
+          <div class="role-lock-desc">
+            Por estrictas políticas de confidencialidad y privacidad salarial, la nómina global y los sueldos de todo el personal están reservados exclusivamente para la <strong>👑 Administradora</strong> y el <strong>🛠️ Técnico de la App</strong>.
+          </div>
+          <div class="role-lock-badge-detail">
+            <span>Tu jerarquía actual:</span>
+            <span class="role-badge role-empleado">💼 Empleado (Acceso Operativo)</span>
+          </div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+            <button class="btn btn-primary" onclick="switchTab('turno-empleado')">
+              📋 Ir a Mi Turno y Ver Mi Recibo Personal
+            </button>
+          </div>
+        </div>
+
+        <div id="nominaAuthorizedContent">
+          <div class="section-header">
+            <div class="header-title">
+              <h1>👥 Gestión de Personal, Empleados y Nómina</h1>
+              <p>Directorio de colaboradores de tu empresa, nuevos empleados registrados y administración salarial.</p>
+            </div>
+            <div class="header-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn btn-secondary btn-sm" onclick="openModal('modalSimularEmpleado')" title="Simula que un nuevo colaborador se registra en línea a tu empresa">
+                ✨ Simular Registro a mi Empresa
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="abrirModalNuevoEmpleado()">
+                + Registrar Colaborador
+              </button>
+              <button class="btn btn-secondary btn-sm" id="btnDispersarNomina" onclick="dispersarNomina()">
+                💸 Dispersar Nómina
+              </button>
+            </div>
+          </div>
+
+          <!-- Banner Informativo de la Empresa y Métricas de Colaboradores -->
+          <div class="card" style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-light);">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 42px; height: 42px; border-radius: var(--radius-md); background: var(--accent-primary-subtle); border: 1px solid var(--accent-primary-border); display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                  🏢
+                </div>
+                <div>
+                  <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted);">Empresa Activa Administrada</div>
+                  <div style="font-size: 1.18rem; font-weight: 700; color: var(--text-main);" id="adminEmpresaTitle">Corporativo Financiero Global S.A.</div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <span class="badge badge-pagado" id="badgeAdminEmpresaRol">👑 Administradora</span>
+                <button class="btn btn-secondary btn-sm" onclick="switchTab('configuraciones')" style="font-size: 0.75rem; padding: 4px 10px;">
+                  ⚙️ Configuración Fiscal
+                </button>
+              </div>
+            </div>
+
+            <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
+              <div class="metric-card" style="padding: 12px 14px;">
+                <div class="metric-title" style="font-size: 0.75rem;">Total Personal</div>
+                <div class="metric-value" id="statTotalEmpleadosEmpresa" style="font-size: 1.5rem; color: var(--text-main);">0</div>
+                <div class="metric-sub" id="statSubTotalEmpleados">Miembros vinculados</div>
+              </div>
+
+              <div class="metric-card" style="padding: 12px 14px;">
+                <div class="metric-title" style="font-size: 0.75rem;">👑 Administradores</div>
+                <div class="metric-value" id="statTotalAdmins" style="font-size: 1.5rem; color: #fbbf24;">0</div>
+                <div class="metric-sub">Gestión y control total</div>
+              </div>
+
+              <div class="metric-card" style="padding: 12px 14px;">
+                <div class="metric-title" style="font-size: 0.75rem;">💼 Empleados</div>
+                <div class="metric-value" id="statTotalEmpleados" style="font-size: 1.5rem; color: #38bdf8;">0</div>
+                <div class="metric-sub">Operaciones y turnos</div>
+              </div>
+
+              <div class="metric-card" style="padding: 12px 14px;">
+                <div class="metric-title" style="font-size: 0.75rem;">🛠️ Técnicos</div>
+                <div class="metric-value" id="statTotalTecnicos" style="font-size: 1.5rem; color: #f97316;">0</div>
+                <div class="metric-sub">Acceso total y soporte</div>
+              </div>
+
+              <div class="metric-card" style="padding: 12px 14px;">
+                <div class="metric-title" style="font-size: 0.75rem;">En Plantilla Salarial</div>
+                <div class="metric-value" id="statEmpleadosEnNomina" style="font-size: 1.5rem; color: var(--accent-success);">0</div>
+                <div class="metric-sub">Sueldo en nómina</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECCIÓN 1: DIRECTORIO DE PERSONAL Y MIEMBROS DE TU EMPRESA -->
+          <div class="card" style="margin-bottom: 24px;">
+            <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <span style="font-size: 1.05rem;">👥 Directorio de Personal y Miembros de la Empresa</span>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; font-weight: normal;">
+                  Acceso y visualización de todo el equipo: Administradores, Empleados y Personal Técnico vinculados a la empresa.
+                </p>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <input type="text" id="empSearchInput" class="form-control" style="font-size: 0.8rem; padding: 6px 12px; width: 220px;" placeholder="🔍 Buscar por nombre, correo..." oninput="filtrarDirectorioEmpleados()">
+                <select id="empFilterTipo" class="form-control" style="font-size: 0.8rem; padding: 6px 12px; width: 210px;" onchange="filtrarDirectorioEmpleados()">
+                  <option value="todos">Todos los miembros</option>
+                  <option value="admin">👑 Solo Administradores</option>
+                  <option value="empleado">💼 Solo Empleados</option>
+                  <option value="tecnico">🛠️ Solo Técnicos</option>
+                  <option value="con_cuenta">Con cuenta de plataforma</option>
+                  <option value="en_nomina">En plantilla salarial</option>
+                  <option value="pendientes">Pendientes de salario</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Personal / Miembro</th>
+                    <th>Rol Oficial</th>
+                    <th>Correo de Acceso</th>
+                    <th>Puesto / Función</th>
+                    <th>Origen y Acceso</th>
+                    <th>Estatus Salarial</th>
+                    <th>Registro</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="directorioEmpleadosBody">
+                  <tr id="emptyDirectorioRow"><td colspan="8" class="empty-state">Cargando directorio de personal...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- SECCIÓN 2: PLANTILLA SALARIAL Y DISPERSIÓN DE NÓMINA -->
+          <div class="card">
+            <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <span style="font-size: 1.05rem;">💵 Plantilla Salarial y Dispersión de Nómina</span>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; font-weight: normal;">
+                  Cálculo de remuneraciones, bonos, retenciones y dispersión oficial de haberes bancarios.
+                </p>
+              </div>
+            </div>
+
+            <div class="metrics-grid" style="margin-bottom: 16px;">
+              <div class="metric-card">
+                <div class="metric-title">Percepciones Totales (Bruto)</div>
+                <div class="metric-value" style="color: var(--accent-success);" id="nomTotalPercepciones">$0.00</div>
+                <div class="metric-sub">Sueldos base + Bonos y primas</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-title">Deducciones Totales</div>
+                <div class="metric-value" style="color: var(--accent-danger);" id="nomTotalDeducciones">$0.00</div>
+                <div class="metric-sub">Seguridad social e impuestos</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-title">Nómina Líquida Neta</div>
+                <div class="metric-value" id="nomTotalNeto">$0.00</div>
+                <div class="metric-sub" id="nomNumEmpleados">0 Colaboradores</div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Colaborador / Puesto</th>
+                    <th>Sueldo Base</th>
+                    <th>Percepciones (+)</th>
+                    <th>Deducciones (-)</th>
+                    <th>Sueldo Neto</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="nominaBody">
+                  <tr id="emptyNominaRow"><td colspan="6" class="empty-state">No hay colaboradores en la nómina.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- PESTAÑA 6: INFORMES Y P&L (ESTADO DE RESULTADOS)             -->
+      <!-- ============================================================ -->
+      <section id="tab-informes" class="tab-content">
+        <div id="informesRestrictedScreen" class="role-lock-screen" style="display: none;">
+          <div class="role-lock-icon">📊</div>
+          <div class="role-lock-title">Acceso Restringido: Informes Financieros y P&amp;L</div>
+          <div class="role-lock-desc">
+            El balance general de pérdidas y ganancias (P&amp;L), margen neto y utilidades acumuladas son de consulta gerencial confidencial. Están reservados exclusivamente para la <strong>👑 Administradora</strong> y el <strong>🛠️ Técnico de la App</strong>.
+          </div>
+          <div class="role-lock-badge-detail">
+            <span>Tu jerarquía actual:</span>
+            <span class="role-badge role-empleado">💼 Empleado (Acceso Operativo)</span>
+          </div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+            <button class="btn btn-primary" onclick="switchTab('dashboard')">
+              📊 Volver al Panel General
+            </button>
+          </div>
+        </div>
+
+        <div id="informesAuthorizedContent">
+          <div class="section-header">
+            <div class="header-title">
+              <h1>📈 Informes Ejecutivos y Estado de Resultados (P&amp;L)</h1>
+              <p>Análisis de rentabilidad, margen bruto, margen neto y punto de equilibrio del negocio.</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn btn-secondary" onclick="window.print()">
+                🖨️ Imprimir
+              </button>
+              <button class="btn btn-primary" onclick="exportarCSV()">
+                📥 Exportar Datos
+              </button>
+            </div>
+          </div>
+
+          <div class="controls-bar">
+            <span style="font-size: 0.85rem; color: var(--text-secondary);">Seleccionar Escenario / Periodo:</span>
+            <select class="filter-select" id="periodoSelect" onchange="actualizarReporte()">
+              <option value="mes">Mes Promedio Proyectado</option>
+              <option value="trimestre">Trimestre Consolidado</option>
+              <option value="anio">Año Completo (Anual)</option>
+              <option value="real">Calcular de Transacciones Reales</option>
+            </select>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-title">Ingresos Operativos</div>
+              <div class="metric-value" style="color: var(--accent-success);" id="kpiIngresos">$0.00</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-title">Costos y Gastos Totales</div>
+              <div class="metric-value" style="color: var(--accent-danger);" id="kpiGastos">$0.00</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-title">Utilidad Neta</div>
+              <div class="metric-value" id="kpiUtilidad">$0.00</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-title">Margen Neto</div>
+              <div class="metric-value" style="color: var(--accent-purple);" id="kpiMargen">0.0%</div>
+            </div>
+          </div>
+
+          <div class="reports-layout">
+            <div class="card">
+              <div class="card-title">
+                <span>Estado de Resultados Dinámico (Simulador Interactivo)</span>
+                <button class="btn btn-secondary btn-sm" onclick="recalcularPyl()">↻ Recalcular</button>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Concepto Contable</th>
+                      <th style="text-align: right;">Monto ($)</th>
+                      <th style="text-align: right;">% s/ Ventas</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>(+) Ventas Netas Totales</strong></td>
+                      <td style="text-align: right;"><input type="number" class="sim-input" id="pylVentas" value="150000" onchange="recalcularPyl()"></td>
+                      <td style="text-align: right;">100%</td>
+                    </tr>
+                    <tr>
+                      <td>(-) Costo de Mercancía / Proveedores</td>
+                      <td style="text-align: right;"><input type="number" class="sim-input" id="pylCostoVentas" value="60000" onchange="recalcularPyl()"></td>
+                      <td style="text-align: right;" id="pctCosto">40.0%</td>
+                    </tr>
+                    <tr class="row-total">
+                      <td><strong>(=) Utilidad Bruta</strong></td>
+                      <td style="text-align: right; color: var(--accent-success); font-weight: 700;" id="pylUtilidadBruta">$90,000.00</td>
+                      <td style="text-align: right;" id="pctBruto">60.0%</td>
+                    </tr>
+                    <tr>
+                      <td>(-) Gastos Operativos y Nómina</td>
+                      <td style="text-align: right;"><input type="number" class="sim-input" id="pylGastosOp" value="25000" onchange="recalcularPyl()"></td>
+                      <td style="text-align: right;" id="pctGastosOp">16.7%</td>
+                    </tr>
+                    <tr>
+                      <td>(-) Impuestos y Cargas Fiscales</td>
+                      <td style="text-align: right;"><input type="number" class="sim-input" id="pylImpuestos" value="10000" onchange="recalcularPyl()"></td>
+                      <td style="text-align: right;" id="pctImpuestos">6.7%</td>
+                    </tr>
+                    <tr class="row-total" style="background-color: rgba(16, 185, 129, 0.1);">
+                      <td><strong style="color: var(--accent-success); font-size: 1rem;">(=) Utilidad Neta Final</strong></td>
+                      <td style="text-align: right; color: var(--accent-success); font-weight: 800; font-size: 1.1rem;" id="pylUtilidadNeta">$55,000.00</td>
+                      <td style="text-align: right; font-weight: 700;" id="pctNeto">36.7%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title">
+                <span>Indicadores Clave de Salud</span>
+              </div>
+              <div class="kpi-stat-item">
+                <span class="kpi-stat-label">Punto de Equilibrio Requerido:</span>
+                <span class="kpi-stat-val" id="kpiEquilibrio">$85,000.00</span>
+              </div>
+              <div class="kpi-stat-item">
+                <span class="kpi-stat-label">EBITDA Proyectado:</span>
+                <span class="kpi-stat-val" style="color: var(--accent-primary);" id="kpiEbitda">$65,000.00</span>
+              </div>
+              <div class="kpi-stat-item">
+                <span class="kpi-stat-label">Ratio de Absorción de Gastos:</span>
+                <span class="kpi-stat-val" style="color: var(--accent-warning);" id="kpiRatio">56.7%</span>
+              </div>
+              <div class="metric-footer" style="margin-top: 16px;">
+                💡 Valores calculados automáticamente a partir de tus márgenes de contribución.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- PESTAÑA: CONFIGURACIONES POR JERARQUÍA                       -->
+      <!-- ============================================================ -->
+      <section id="tab-configuraciones" class="tab-content">
+        <div class="section-header">
+          <div class="header-title">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <h1 id="configSectionTitle">⚙️ Centro de Configuraciones por Jerarquía</h1>
+              <span id="configSectionBadge" class="role-badge role-administradora">👑 Administradora</span>
+            </div>
+            <p id="configSectionDesc">Ajustes especializados y parámetros operativos adaptados a cada nivel de acceso del sistema.</p>
+          </div>
+        </div>
+
+        <!-- Barra de Jerarquías / Subpestañas Dinámica -->
+        <div id="configTabsNav" class="config-tabs-nav" style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; overflow-x: auto;">
+          <button class="btn btn-sm btn-secondary active-cfg-tab" id="btnSubtabAdmin" onclick="cambiarSubtabConfig('admin')">
+            👑 1. Administradora (Finanzas &amp; Empresa)
+          </button>
+          <button class="btn btn-sm btn-secondary" id="btnSubtabEmpleado" onclick="cambiarSubtabConfig('empleado')">
+            💼 2. Empleado (Turno &amp; Notificaciones)
+          </button>
+          <button class="btn btn-sm btn-secondary" id="btnSubtabTecnico" onclick="cambiarSubtabConfig('tecnico')">
+            🛠️ 3. Técnico de la App (Integridad &amp; TI)
+          </button>
+        </div>
+
+        <!-- Pantalla para Invitados (sin sesión) -->
+        <div id="configGuestNotice" class="card" style="display: none; text-align: center; padding: 40px 24px; max-width: 600px; margin: 20px auto;">
+          <div style="font-size: 2.5rem; margin-bottom: 12px;">🔒</div>
+          <h2 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">Configuraciones Adaptadas por Jerarquía</h2>
+          <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;">
+            Inicia sesión o crea tu cuenta seleccionando tu jerarquía (Administradora, Empleado o Técnico) para acceder de inmediato a tus parámetros operativos y controles personalizados.
+          </p>
+          <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="openModal('modalLogin')">🔑 Iniciar Sesión</button>
+            <button class="btn btn-secondary" onclick="openModal('modalRegistro')">✨ Crear Cuenta con Mi Jerarquía</button>
+          </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 1. SUBTAB: CONFIGURACIONES DE ADMINISTRADORA                 -->
+        <!-- ============================================================ -->
+        <div id="subtabConfigAdmin" class="subtab-config-content">
+          <div class="reports-layout">
+            <!-- Perfil de la Empresa -->
+            <div class="card">
+              <div class="card-title">
+                <span>🏢 Datos Corporativos y Fiscales</span>
+                <span class="tag-pill">Empresa</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div class="form-group">
+                  <label for="cfgEmpresaName">Razón Social / Nombre Comercial</label>
+                  <input type="text" id="cfgEmpresaName" class="form-control" placeholder="Ej. Mi Empresa S.A. DE C.V.">
+                </div>
+                <div class="form-group">
+                  <label for="cfgRfc">Identificador Fiscal (RFC / NIT / CIF)</label>
+                  <input type="text" id="cfgRfc" class="form-control" placeholder="Ej. FCA210901ABC">
+                </div>
+                <div class="form-group">
+                  <label for="cfgDivisa">Divisa Operativa Global</label>
+                  <select id="cfgDivisa" class="filter-select">
+                    <option value="MXN">Peso Mexicano ($ MXN)</option>
+                    <option value="USD">Dólar Estadounidense ($ USD)</option>
+                    <option value="EUR">Euro (€ EUR)</option>
+                    <option value="COP">Peso Colombiano ($ COP)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="cfgPais">País / Región Principal</label>
+                  <input type="text" id="cfgPais" class="form-control" value="México" placeholder="Ej. México, Colombia, España">
+                </div>
+                <button class="btn btn-primary" id="btnGuardarConfigAdmin" onclick="guardarConfigAdmin()">
+                  💾 Guardar Datos Corporativos
+                </button>
+              </div>
+            </div>
+
+            <!-- Políticas Financieras y Controles -->
+            <div class="card">
+              <div class="card-title">
+                <span>🛡️ Políticas Financieras &amp; Tesorería</span>
+                <span class="tag-pill">Políticas</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div class="form-group">
+                  <label for="cfgGastoLimite">Alerta de Gasto Crítico ($)</label>
+                  <input type="number" id="cfgGastoLimite" class="form-control" placeholder="5000.00" step="100">
+                  <span style="font-size: 0.75rem; color: var(--text-muted);">Genera advertencia cuando se registre un gasto superior a este monto.</span>
+                </div>
+                <div class="form-group">
+                  <label for="cfgSaldoMinimo">Saldo Mínimo de Contingencia ($)</label>
+                  <input type="number" id="cfgSaldoMinimo" class="form-control" placeholder="10000.00" step="500">
+                  <span style="font-size: 0.75rem; color: var(--text-muted);">Alerta cuando el saldo disponible en caja o bancos baje del umbral.</span>
+                </div>
+                <div class="form-group">
+                  <label for="cfgExigirFolio">Exigir Número de Ticket / Folio en Gastos de Turno</label>
+                  <select id="cfgExigirFolio" class="filter-select">
+                    <option value="si">Sí - Obligatorio para registrar gastos</option>
+                    <option value="no">No - Opcional para el empleado</option>
+                  </select>
+                </div>
+                <button class="btn btn-primary" onclick="guardarConfigAdmin()">
+                  💾 Guardar Políticas Financieras
+                </button>
+              </div>
+            </div>
+
+            <!-- Gestión de Respaldos -->
+            <div class="card" style="grid-column: 1 / -1;">
+              <div class="card-title">
+                <span>📦 Gobierno de Datos, Respaldos y Restauración</span>
+                <span class="tag-pill">Seguridad</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 14px;">
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                  Exporta una copia de seguridad íntegra de cuentas bancarias, movimientos, nómina y configuraciones en formato JSON estándar, o restaura un archivo previo.
+                </p>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                  <button class="btn btn-secondary" onclick="exportarRespaldoJSON()">
+                    📥 Exportar Copia de Seguridad JSON
+                  </button>
+                  <button class="btn btn-secondary" onclick="document.getElementById('inputImportarJSON').click()">
+                    📤 Importar / Restaurar Respaldo JSON
+                  </button>
+                  <input type="file" id="inputImportarJSON" accept=".json" style="display: none;" onchange="importarRespaldoJSON(event)">
+                </div>
+                <hr style="border-color: var(--border-color); margin: 6px 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                  <div>
+                    <strong style="font-size: 0.85rem; color: #dc2626;">Reiniciar Balances a Cero</strong>
+                    <p style="font-size: 0.78rem; color: var(--text-muted);">Restablece las cuentas bancarias, transacciones y nómina de este perfil a $0.00.</p>
+                  </div>
+                  <button class="btn btn-danger btn-sm" onclick="reiniciarDatosCero()">
+                    🗑️ Restablecer a Cero ($0.00)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 2. SUBTAB: CONFIGURACIONES DE EMPLEADO                       -->
+        <!-- ============================================================ -->
+        <div id="subtabConfigEmpleado" class="subtab-config-content" style="display: none;">
+          <div class="reports-layout">
+            <!-- Operativa de Turno -->
+            <div class="card">
+              <div class="card-title">
+                <span>⏱️ Parámetros de Turno y Caja Chica</span>
+                <span class="tag-pill">Operativa</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div class="form-group">
+                  <label for="cfgBaseCajaEmpleado">Fondo de Caja Base Sugerido ($)</label>
+                  <input type="number" id="cfgBaseCajaEmpleado" class="form-control" placeholder="0.00" step="50">
+                  <span style="font-size: 0.75rem; color: var(--text-muted);">Monto inicial precargado al aperturar un nuevo turno de caja.</span>
+                </div>
+                <div class="form-group">
+                  <label for="cfgCatGastoEmpleado">Categoría de Gasto Predeterminada</label>
+                  <select id="cfgCatGastoEmpleado" class="filter-select">
+                    <option value="Operativo">Gastos Operativos / Sucursal</option>
+                    <option value="Combustible">Combustible / Transporte</option>
+                    <option value="Insumos">Insumos y Papelería</option>
+                    <option value="Mensajería">Envíos y Mensajería</option>
+                    <option value="Servicios">Servicios Básicos</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="cfgConfirmarGasto">Solicitar Confirmación al Rendir Gasto</label>
+                  <select id="cfgConfirmarGasto" class="filter-select">
+                    <option value="si">Sí - Preguntar antes de registrar</option>
+                    <option value="no">No - Registro directo inmediato</option>
+                  </select>
+                </div>
+                <button class="btn btn-primary" onclick="guardarConfigEmpleado()">
+                  💾 Guardar Preferencias de Turno
+                </button>
+              </div>
+            </div>
+
+            <!-- Comprobante y Privacidad -->
+            <div class="card">
+              <div class="card-title">
+                <span>📄 Recibo de Nómina &amp; Privacidad</span>
+                <span class="tag-pill">Personal</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div class="form-group">
+                  <label for="cfgFormatoRecibo">Formato de Comprobante Personal</label>
+                  <select id="cfgFormatoRecibo" class="filter-select">
+                    <option value="detallado">Detallado (Percepciones, Bonos, Deducciones y Líquido)</option>
+                    <option value="resumido">Resumen Ejecutivo (Total Neto y Fecha)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="cfgPrivacidadMontos">Modo de Privacidad en Pantalla</label>
+                  <select id="cfgPrivacidadMontos" class="filter-select">
+                    <option value="visible">Mostrar importes normalmente ($0.00)</option>
+                    <option value="oculto">Ocultar saldos con asteriscos (••••)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="cfgEmailNotifEmpleado">Correo para Notificaciones de Nómina</label>
+                  <input type="email" id="cfgEmailNotifEmpleado" class="form-control" placeholder="tu-correo@empresa.com">
+                </div>
+                <button class="btn btn-primary" onclick="guardarConfigEmpleado()">
+                  💾 Guardar Preferencias de Empleado
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 3. SUBTAB: CONFIGURACIONES DE TÉCNICO DE LA APP              -->
+        <!-- ============================================================ -->
+        <div id="subtabConfigTecnico" class="subtab-config-content" style="display: none;">
+          <div class="reports-layout">
+            <!-- Diagnóstico y Auditoría -->
+            <div class="card">
+              <div class="card-title">
+                <span>⚡ Auditoría de Integridad del Sistema</span>
+                <span class="tag-pill">Diagnóstico</span>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 14px;">
+                Ejecuta una validación profunda de claves primarias, coherencia numérica en saldos y comprobación de integridad relacional.
+              </p>
+              <div style="display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;">
+                <button class="btn btn-primary btn-sm" onclick="ejecutarDiagnosticoTecnico()">
+                  ⚡ Iniciar Auditoría Completa
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="document.getElementById('techConsoleLog').innerText = 'Consola limpiada. Lista para nuevo diagnóstico.'">
+                  🧹 Limpiar Consola
+                </button>
+              </div>
+              <div id="techConsoleLog" class="tech-console-log">Esperando orden de diagnóstico... Haz clic en "Iniciar Auditoría Completa".</div>
+            </div>
+
+            <!-- Monitor de Memoria y Almacenamiento -->
+            <div class="card">
+              <div class="card-title">
+                <span>💾 Almacenamiento Local &amp; Memoria</span>
+                <span class="tag-pill">Caché</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="background-color: var(--bg-main); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.82rem;">
+                    <span>Espacio en LocalStorage:</span>
+                    <strong id="techStorageSizeKB">0.00 KB</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.82rem;">
+                    <span>Total de Llaves en Memoria:</span>
+                    <strong id="techStorageKeysCount">0</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 0.82rem;">
+                    <span>Estado del Almacén:</span>
+                    <span style="color: #059669; font-weight: 600;">Óptimo / Saludable</span>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                  <button class="btn btn-secondary btn-sm" onclick="optimizarAlmacenamientoLocal()">
+                    🧹 Compactar y Optimizar Base Local
+                  </button>
+                  <button class="btn btn-secondary btn-sm" onclick="purgarCacheTemporal()">
+                    🗑️ Purgar Temporales
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Seguridad TI y Mantenimiento -->
+            <div class="card" style="grid-column: 1 / -1;">
+              <div class="card-title">
+                <span>🔒 Parámetros de Entorno y Seguridad TI</span>
+                <span class="tag-pill">Infraestructura</span>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
+                <div class="form-group">
+                  <label for="cfgModoMantenimiento">Modo Mantenimiento del Sistema</label>
+                  <select id="cfgModoMantenimiento" class="filter-select">
+                    <option value="desactivado">Desactivado (Operación Normal)</option>
+                    <option value="activado">Activado (Banner Preventivo)</option>
+                  </select>
+                  <span style="font-size: 0.75rem; color: var(--text-muted);">Muestra un cintillo de aviso preventivo en la barra superior.</span>
+                </div>
+                <div class="form-group">
+                  <label for="cfgLogLevel">Nivel de Registro (Logs en Consola)</label>
+                  <select id="cfgLogLevel" class="filter-select">
+                    <option value="debug">Depuración Completa (Verbose / Info / Errores)</option>
+                    <option value="warn">Solo Advertencias y Errores</option>
+                    <option value="error">Solo Errores Críticos</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="cfgTiempoSesion">Caducidad de Sesión por Inactividad</label>
+                  <select id="cfgTiempoSesion" class="filter-select">
+                    <option value="15">15 minutos</option>
+                    <option value="30">30 minutos</option>
+                    <option value="60">60 minutos (Recomendado)</option>
+                    <option value="480">8 horas</option>
+                    <option value="0">Sin caducidad</option>
+                  </select>
+                </div>
+              </div>
+              <div style="margin-top: 16px;">
+                <button class="btn btn-primary" onclick="guardarConfigTecnico()">
+                  💾 Guardar Parámetros Técnicos
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- SISTEMA DE VENTANAS MODALES                                    -->
+  <!-- ============================================================== -->
+
+  <!-- Modal: Vincular Cuenta Bancaria -->
+  <div class="modal-overlay" id="modalCuenta">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🏛️ Vincular Cuenta Financiera</h3>
+        <button class="modal-close-btn" onclick="closeModal('modalCuenta')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="ctaBanco">Institución o Banco</label>
+          <input type="text" id="ctaBanco" class="form-control" placeholder="Ej. BBVA, Santander, Banorte, Caja Chica">
+        </div>
+        <div class="form-group">
+          <label for="ctaTipo">Tipo de Cuenta</label>
+          <select id="ctaTipo" class="filter-select">
+            <option value="Débito / Cheques">Débito / Cheques</option>
+            <option value="Crédito">Tarjeta de Crédito Corporativa</option>
+            <option value="Efectivo">Caja Chica / Efectivo</option>
+            <option value="Inversión">Inversión a Plazo Fijo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="ctaNumero">Número de Cuenta o Tarjeta</label>
+          <input type="text" id="ctaNumero" class="form-control" placeholder="Ej. •••• 4589 o CLABE">
+        </div>
+        <div class="form-group">
+          <label for="ctaSaldo">Saldo Inicial / Disponible ($)</label>
+          <input type="number" id="ctaSaldo" class="form-control" placeholder="0.00" step="0.01">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modalCuenta')">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarCuenta()">Guardar Cuenta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Transferencia Entre Cuentas -->
+  <div class="modal-overlay" id="modalTransferencia">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>⇄ Transferir Fondos Entre Cuentas</h3>
+        <button class="modal-close-btn" onclick="closeModal('modalTransferencia')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="transfOrigen">Cuenta de Origen (Salida)</label>
+          <select id="transfOrigen" class="filter-select"></select>
+        </div>
+        <div class="form-group">
+          <label for="transfDestino">Cuenta de Destino (Entrada)</label>
+          <select id="transfDestino" class="filter-select"></select>
+        </div>
+        <div class="form-group">
+          <label for="transfMonto">Monto a Transferir ($)</label>
+          <input type="number" id="transfMonto" class="form-control" placeholder="0.00" step="0.01">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modalTransferencia')">Cancelar</button>
+        <button class="btn btn-primary" onclick="transferirEntreCuentas()">Ejecutar Transferencia</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Nueva Transacción Completa -->
+  <div class="modal-overlay" id="modalTx">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🔄 Registrar Movimiento Financiero</h3>
+        <button class="modal-close-btn" onclick="closeModal('modalTx')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="txTipo">Tipo de Movimiento</label>
+          <select id="txTipo" class="filter-select">
+            <option value="ingreso">Ingreso / Entrada (+)</option>
+            <option value="egreso">Egreso / Gasto (-)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="txFecha">Fecha del Movimiento</label>
+          <input type="date" id="txFecha" class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="txConcepto">Concepto / Descripción</label>
+          <input type="text" id="txConcepto" class="form-control" placeholder="Ej. Pago a proveedor de licencias #842">
+        </div>
+        <div class="form-group">
+          <label for="txCategoria">Categoría Contable</label>
+          <select id="txCategoria" class="filter-select">
+            <option value="Ventas">Ventas y Servicios</option>
+            <option value="Proveedores">Proveedores y Materia Prima</option>
+            <option value="Nómina">Nómina y Sueldos</option>
+            <option value="Servicios">Servicios Básicos y Renta</option>
+            <option value="Impuestos">Impuestos y Obligaciones</option>
+            <option value="Operativo">Gastos Operativos</option>
+            <option value="Otros">Otros Movimientos</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="txCuenta">Cuenta Bancaria Afectada</label>
+          <select id="txCuenta" class="filter-select"></select>
+        </div>
+        <div class="form-group">
+          <label for="txMonto">Monto Total ($)</label>
+          <input type="number" id="txMonto" class="form-control" placeholder="0.00" step="0.01">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modalTx')">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarTransaccion()">Guardar Movimiento</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Transacción Rápida desde Dashboard -->
+  <div class="modal-overlay" id="modalPagoDash">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>+ Transacción Rápida</h3>
+        <button class="modal-close-btn" onclick="closeModal('modalPagoDash')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="pagoTipoDash">Tipo</label>
+          <select id="pagoTipoDash" class="filter-select">
+            <option value="egreso">Egreso / Gasto (-)</option>
+            <option value="ingreso">Ingreso / Cobro (+)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="pagoConceptoDash">Concepto</label>
+          <input type="text" id="pagoConceptoDash" class="form-control" placeholder="Ej. Combustible o Papelería">
+        </div>
+        <div class="form-group">
+          <label for="pagoMontoDash">Monto ($)</label>
+          <input type="number" id="pagoMontoDash" class="form-control" placeholder="0.00" step="0.01">
+        </div>
+        <div class="form-group">
+          <label for="pagoCatDash">Categoría</label>
+          <select id="pagoCatDash" class="filter-select">
+            <option value="Servicios">Servicios Básicos</option>
+            <option value="Proveedores">Proveedores</option>
+            <option value="Nómina">Nómina</option>
+            <option value="Ventas">Ingresos de Ventas</option>
+            <option value="Operativo">Operativo General</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modalPagoDash')">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarPagoDash()">Registrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Programar Pago o Cobro -->
+  <div class="modal-overlay" id="modalPagoProgramado">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>💳 Programar Compromiso Financiero</h3>
+        <button class="modal-close-btn" onclick="closeModal('modalPagoProgramado')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="pagoProgTipo">Naturaleza</label>
+          <select id="pagoProgTipo" class="filter-select">
+            <option value="Por Pagar">Cuenta por Pagar (Proveedor / Servicio)</option>
+            <option value="Por Cobrar">Cuenta por Cobrar (Cliente / Factura)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="pagoProgEntidad">Beneficiario o Cliente</label>
+          <input type="text" id="pagoProgEntidad" class="form-control" placeholder="Ej. Distribuidora del Norte S.A.">
+        </div>
+        <div class="form-group">
+          <label for="pagoProgVencimiento">Fecha Límite / Vencimiento</label>
+          <input type="date" id="pagoProgVencimiento" class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="pagoProgMonto">Monto a Liquidar ($)</label>
+          <input type="number" id="pagoProgMonto" class="form-control" placeholder="0.00" step="0.01">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modalPagoProgramado')">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarPagoProgramado()">Programar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Registrar / Modificar Colaborador en Nómina y Empresa -->
+  <div class="modal-overlay" id="modalEmpleado">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalEmpleadoTitulo">👤 Registrar Colaborador en tu Empresa</h3>
+        <button class="modal-close-btn" onclick="closeModal('modalEmpleado')">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="empId" value="">
+        <div class="form-group">
+          <label for="empNombre">Nombre Completo *</label>
+          <input type="text" id="empNombre" class="form-control" placeholder="Ej. Laura Martínez" required>
+        </div>
+        <div class="form-group">
+          <label for="empEmail">Correo Electrónico (Acceso o Contacto)</label>
+          <input type="email" id="empEmail" class="form-control" placeholder="empleado@correo.com">
+        </div>
+        <div class="form-group">
+          <label for="empPuesto">Puesto / Cargo *</label>
+          <input type="text" id="empPuesto" class="form-control" placeholder="Ej. Analista Contable o Ejecutivo de Caja" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label for="empSueldo">Sueldo Base Quincenal ($)</label>
+            <input type="number" id="empSueldo" class="form-control" placeholder="0.00" step="0.01">
+          </div>
+          <div class="form-group">
+            <label for="empBonos">Percepciones / Bonos ($)</label>
+            <input type="number" id="empBonos" class="form-control" placeholder="0.00" step="0.01">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="empDeducciones">Deducciones / Retenciones Fiscales ($)</label>
+          <input type="number" id="empDeducciones" class="form-control" placeholder="0.00" step="0.01">
+        </div>
+
+        <!-- Opción para habilitar cuenta de acceso en la app -->
+        <div style="margin-top: 12px; padding: 12px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: var(--radius-md);">
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; color: var(--text-main);">
+            <input type="checkbox" id="empCrearCuentaApp" onchange="document.getElementById('empPasswordWrapper').style.display = this.checked ? 'block' : 'none';">
+            <span>Habilitar cuenta de acceso a la plataforma (Rol: Empleado)</span>
+          </label>
+          <div id="empPasswordWrapper" style="display: none; margin-top: 10px;">
+            <p style="font-size: 0.76rem; color: var(--text-secondary); margin-bottom: 6px;">
+              El colaborador podrá iniciar sesión con su correo electrónico y esta contraseña para ver sus recibos y registrar cortes en "Mi Turno".
+            </p>
+            <label for="empPassword" style="font-size: 0.78rem; font-weight: 600;">Contraseña de Acceso:</label>
+            <input type="text" id="empPassword" class="form-control" value="password123" placeholder="password123">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modalEmpleado')">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarEmpleado()">Guardar Colaborador</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Ficha Detallada del Empleado -->
+  <div class="modal-overlay" id="modalFichaEmpleado">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="fichaEmpleadoTitulo">👤 Expediente de Colaborador</h3>
+        <button class="modal-close-btn" onclick="closeModal('modalFichaEmpleado')">×</button>
+      </div>
+      <div class="modal-body" id="fichaEmpleadoBody">
+        <!-- Renderizado dinámicamente -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modalFichaEmpleado')">Cerrar</button>
+        <button class="btn btn-primary" id="btnFichaEditar" onclick="">Configurar Sueldo / Editar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Simular Registro de Nuevo Empleado a tu Empresa -->
+  <div class="modal-overlay" id="modalSimularEmpleado">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>✨ Simular Registro de Empleado a tu Empresa</h3>
+        <button class="modal-close-btn" onclick="closeModal('modalSimularEmpleado')">×</button>
+      </div>
+      <div class="modal-body">
+        <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: var(--radius-md); padding: 12px; margin-bottom: 14px; font-size: 0.82rem; color: #60a5fa; display: flex; gap: 8px;">
+          <span style="font-size: 1.2rem;">💡</span>
+          <div>
+            <strong>Demostración de flujo colaborativo:</strong> Simula que un usuario externo se registra en Five Cash como <strong>Empleado</strong> ingresando el nombre de tu empresa (<strong><span id="simularEmpresaNombre">...</span></strong>). Verás cómo aparece automáticamente en tu directorio.
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="simNombre">Nombre del Colaborador *</label>
+          <input type="text" id="simNombre" class="form-control" value="Valeria Domínguez">
+        </div>
+        <div class="form-group">
+          <label for="simEmail">Correo Electrónico *</label>
+          <input type="email" id="simEmail" class="form-control" value="valeria.dominguez@empresa.com">
+        </div>
+        <div class="form-group">
+          <label for="simPuesto">Puesto / Cargo</label>
+          <input type="text" id="simPuesto" class="form-control" value="Ejecutiva de Atención y Caja">
+        </div>
+        <div class="form-group">
+          <label for="simPassword">Contraseña de Acceso</label>
+          <input type="text" id="simPassword" class="form-control" value="password123">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modalSimularEmpleado')">Cancelar</button>
+        <button class="btn btn-primary" onclick="ejecutarRegistroSimuladoEmpleado()">Simular Registro Ahora</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Registro de Usuario con Jerarquía y Saldo en Cero -->
+  <div class="modal-overlay" id="modalRegistro">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3>✨ Registrarse en Five Cash (Inicio en Cero)</h3>
+        <button class="modal-close-btn" onclick="closeModal('modalRegistro')">×</button>
+      </div>
+      <div class="modal-body">
+        <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius-md); padding: 12px; margin-bottom: 14px; font-size: 0.82rem; color: #34d399; display: flex; gap: 8px; align-items: flex-start;">
+          <span style="font-size: 1.2rem;">🌱</span>
+          <div>
+            <strong>Inicio en Cero Garantizado:</strong> Al registrarte, tu plataforma se inicializará completamente en <strong>$0.00</strong> sin saldos precargados ni movimientos ficticios. Podrás comenzar a registrar tus propias cuentas y transacciones desde cero.
+          </div>
+        </div>
+
+        <form onsubmit="registrarNuevoUsuario(event)" style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Selector de Jerarquía (Roles) -->
+          <div>
+            <label style="font-weight: 700; font-size: 0.82rem; margin-bottom: 6px; display: block;">
+              Selecciona tu Jerarquía en la Plataforma *
+            </label>
+            <div class="role-selector-grid">
+              <label class="role-option-card selected">
+                <input type="radio" name="regRol" value="administradora" checked style="display:none;" onchange="manejarCambioRolRegistro('administradora', this)">
+                <div class="role-option-icon">👑</div>
+                <div class="role-option-title">Administradora</div>
+                <div class="role-option-sub">Control total, gestión de empleados y nómina</div>
+              </label>
+
+              <label class="role-option-card">
+                <input type="radio" name="regRol" value="empleado" style="display:none;" onchange="manejarCambioRolRegistro('empleado', this)">
+                <div class="role-option-icon">💼</div>
+                <div class="role-option-title">Empleado</div>
+                <div class="role-option-sub">Operativo: Registro a una empresa y turno de caja</div>
+              </label>
+
+              <label class="role-option-card">
+                <input type="radio" name="regRol" value="tecnico" style="display:none;" onchange="manejarCambioRolRegistro('tecnico', this)">
+                <div class="role-option-icon">🛠️</div>
+                <div class="role-option-title">Técnico de la App</div>
+                <div class="role-option-sub">Diagnóstico TI, auditoría BD y mantenimiento</div>
+              </label>
+            </div>
+
+            <!-- Cartel Informativo Explicativo de Jerarquía (Exclusivo al crear cuenta) -->
+            <div id="cartelExplicacionJerarquiaRegistro" style="margin-top: 10px;"></div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div class="form-group">
+              <label for="regNombre">Nombre Completo *</label>
+              <input type="text" id="regNombre" class="form-control" required placeholder="Ej. Ana Morales">
+            </div>
+            <div class="form-group">
+              <label for="regEmpresa" id="regEmpresaLabel">Nombre de la Empresa *</label>
+              <input type="text" id="regEmpresa" class="form-control" required placeholder="Ej. Corporativo Financiero Global S.A." list="listaEmpresasDisponibles">
+              <datalist id="listaEmpresasDisponibles"></datalist>
+              <span id="regEmpresaAyuda" style="font-size: 0.74rem; color: var(--text-muted); display: block; margin-top: 3px;">
+                Nombre de tu corporativo o empresa.
+              </span>
+            </div>
+          </div>
+
+          <div id="regPuestoWrapper" class="form-group" style="display: none;">
+            <label for="regPuesto">Puesto / Cargo en la Empresa</label>
+            <input type="text" id="regPuesto" class="form-control" placeholder="Ej. Asistente Operativo, Cajero, etc.">
+          </div>
+
+          <div class="form-group">
+            <label for="regEmail">Correo Electrónico *</label>
+            <input type="email" id="regEmail" class="form-control" required placeholder="correo@ejemplo.com">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div class="form-group">
+              <label for="regPassword">Contraseña (Mínimo 6 caracteres) *</label>
+              <input type="password" id="regPassword" class="form-control" required minlength="6" placeholder="••••••••">
+            </div>
+            <div class="form-group">
+              <label for="regConfirmPassword">Confirmar Contraseña *</label>
+              <input type="password" id="regConfirmPassword" class="form-control" required minlength="6" placeholder="••••••••">
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; flex-wrap: wrap; gap: 10px;">
+            <a href="javascript:void(0)" onclick="closeModal('modalRegistro'); openModal('modalLogin');" style="font-size: 0.8rem; color: var(--accent-primary);">
+              ¿Ya tienes cuenta? Iniciar Sesión
+            </a>
+            <div style="display: flex; gap: 10px;">
+              <button type="button" class="btn btn-secondary" onclick="closeModal('modalRegistro')">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Registrar e Iniciar en Cero</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Iniciar Sesión (Autenticación) -->
+  <div class="modal-overlay" id="modalLogin">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🔑 Iniciar Sesión en Five Cash</h3>
+        <button class="modal-close-btn" onclick="closeModal('modalLogin')">×</button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="iniciarSesionUsuario(event)" style="display: flex; flex-direction: column; gap: 14px;">
+          <div class="form-group">
+            <label for="loginEmail">Correo Electrónico</label>
+            <input type="email" id="loginEmail" class="form-control" required placeholder="admin@fivecash.com">
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Contraseña</label>
+            <input type="password" id="loginPassword" class="form-control" required placeholder="••••••••">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 6px;">
+            Acceder a la Plataforma
+          </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-color);">
+          <a href="javascript:void(0)" onclick="closeModal('modalLogin'); openModal('modalRegistro');" style="font-size: 0.85rem; color: var(--accent-primary); font-weight: 600; text-decoration: none;">
+            ¿No tienes cuenta? Regístrate aquí
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Confirmación Personalizada del Sistema (iFrame Safe) -->
+  <div class="modal-overlay" id="modalConfirmacion">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 id="modalConfirmTitulo">⚠️ Confirmación Requerida</h3>
+        <button class="modal-close-btn" onclick="closeModal('modalConfirmacion')">×</button>
+      </div>
+      <div class="modal-body">
+        <p id="modalConfirmMensaje" style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 8px;"></p>
+        <div id="modalConfirmDetalle" style="font-size: 0.8rem; color: var(--text-muted); background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: var(--radius-sm); display: none;"></div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modalConfirmacion')">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="modalConfirmBotonAceptar">Sí, Desvincular</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor Dinámico para Notificaciones Toast -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Script JavaScript Externo Vinculado Limpiamente -->
+  <script src="js/app.js"></script>
+
+</body>
+</html>
