@@ -13,30 +13,48 @@ const StorageKey = {
   PREFIX: 'fivecash_user_'
 };
 
-// Lista de usuarios registrados (inicia vacía sin perfiles predeterminados)
-const USUARIOS_BASE = [];
+// Cuentas demo predeterminadas para acceso rápido
+const USUARIOS_BASE = [
+  {
+    id: 1,
+    nombre: 'Laura Méndez',
+    empresa: 'Mi Empresa S.A.',
+    email: 'admin@fivecash.com',
+    password: 'password123',
+    rol: 'administradora',
+    puesto: 'Directora / Administradora',
+    fechaRegistro: '2026-01-15',
+    origen: 'seed'
+  },
+  {
+    id: 2,
+    nombre: 'Carlos Ruiz',
+    empresa: 'Mi Empresa S.A.',
+    email: 'empleado@fivecash.com',
+    password: 'password123',
+    rol: 'empleado',
+    puesto: 'Colaborador Operativo',
+    fechaRegistro: '2026-02-10',
+    origen: 'seed'
+  },
+  {
+    id: 3,
+    nombre: 'Sofía Valdés',
+    empresa: 'Infraestructura FiveCash',
+    email: 'tecnico@fivecash.com',
+    password: 'password123',
+    rol: 'tecnico',
+    puesto: 'Soporte TI / Técnico',
+    fechaRegistro: '2026-01-01',
+    origen: 'seed'
+  }
+];
 
-// Limpieza de usuarios predeterminados de prueba que hayan quedado en localStorage
+// Lista de usuarios registrados por el usuario
 let listaUsuariosRegistrados = cargarDeStorage(StorageKey.USUARIOS, []);
-listaUsuariosRegistrados = (listaUsuariosRegistrados || []).filter(u => 
-  u && u.origen !== 'seed' && 
-  u.email !== 'admin@fivecash.com' && 
-  u.email !== 'empleado@fivecash.com' && 
-  u.email !== 'tecnico@fivecash.com'
-);
-guardarEnStorage(StorageKey.USUARIOS, listaUsuariosRegistrados);
 
-// Sesión Activa Real
+// Sesión Activa Guardada (si no ha cerrado sesión explícitamente)
 let sesionGuardada = cargarDeStorage(StorageKey.SESION_ACTIVA, null);
-if (sesionGuardada && (
-  sesionGuardada.origen === 'seed' || 
-  sesionGuardada.email === 'admin@fivecash.com' || 
-  sesionGuardada.email === 'empleado@fivecash.com' || 
-  sesionGuardada.email === 'tecnico@fivecash.com'
-)) {
-  localStorage.removeItem(StorageKey.SESION_ACTIVA);
-  sesionGuardada = null;
-}
 
 let usuarioActual = localStorage.getItem('fivecash_logged_out') === 'true' 
   ? null 
@@ -410,19 +428,20 @@ function poblarDatalistEmpresas() {
 /**
  * Autentica e inicia sesión para un usuario existente
  */
-async function iniciarSesionUsuario(event) {
+async function iniciarSesionUsuario(event, customEmail, customPassword) {
   if (event) event.preventDefault();
 
-  const email = document.getElementById('loginEmail')?.value.trim().toLowerCase();
-  const password = document.getElementById('loginPassword')?.value;
+  const email = (customEmail || document.getElementById('authLoginEmail')?.value || document.getElementById('loginEmail')?.value || '').trim().toLowerCase();
+  const password = customPassword || document.getElementById('authLoginPassword')?.value || document.getElementById('loginPassword')?.value || '';
 
   if (!email || !password) {
     showToast('Ingresa tu correo y contraseña.', 'warning');
     return;
   }
 
-  // Buscar en la base de datos local
-  const usuario = listaUsuariosRegistrados.find(u => u.email === email && u.password === password);
+  // Buscar en la base de datos local o cuentas demo predeterminadas
+  const usuario = listaUsuariosRegistrados.find(u => u.email === email && u.password === password)
+    || USUARIOS_BASE.find(u => u.email === email && u.password === password);
 
   if (!usuario) {
     showToast('Credenciales incorrectas o usuario no encontrado.', 'danger');
@@ -439,7 +458,150 @@ async function iniciarSesionUsuario(event) {
   closeModal('modalLogin');
 
   const textoRol = obtenerTextoRol(usuario.rol);
-  showToast(`Sesión iniciada correctamente como ${textoRol}.`, 'success');
+  showToast(`¡Bienvenido/a ${usuario.nombre}! Sesión iniciada como ${textoRol}.`, 'success');
+}
+
+/**
+ * Controladores específicos para la Pantalla Principal de Acceso (Portal)
+ */
+function iniciarSesionDesdePortal(event) {
+  if (event) event.preventDefault();
+  const email = document.getElementById('authLoginEmail')?.value.trim().toLowerCase();
+  const password = document.getElementById('authLoginPassword')?.value;
+  iniciarSesionUsuario(event, email, password);
+}
+
+function cambiarModoAuth(modo) {
+  const btnLogin = document.getElementById('tabBtnLogin');
+  const btnReg = document.getElementById('tabBtnRegister');
+  const formLogin = document.getElementById('formAuthLogin');
+  const formReg = document.getElementById('formAuthRegistro');
+  const titleText = document.getElementById('authTitleText');
+  const subText = document.getElementById('authSubtitleText');
+
+  if (modo === 'login') {
+    if (btnLogin) btnLogin.classList.add('active');
+    if (btnReg) btnReg.classList.remove('active');
+    if (formLogin) formLogin.style.display = 'block';
+    if (formReg) formReg.style.display = 'none';
+    if (titleText) titleText.innerText = 'Acceso a la Plataforma';
+    if (subText) subText.innerText = 'Ingresa tus credenciales para acceder a tus finanzas';
+  } else {
+    if (btnReg) btnReg.classList.add('active');
+    if (btnLogin) btnLogin.classList.remove('active');
+    if (formReg) formReg.style.display = 'block';
+    if (formLogin) formLogin.style.display = 'none';
+    if (titleText) titleText.innerText = 'Crear Cuenta Nueva';
+    if (subText) subText.innerText = 'Selecciona tu jerarquía e inicia tu gestión en cero';
+  }
+}
+
+function manejarCambioRolPortal(rol, cardEl) {
+  if (cardEl) {
+    cardEl.closest('.role-selector-grid')?.querySelectorAll('.role-option-card').forEach(c => c.classList.remove('selected'));
+    cardEl.classList.add('selected');
+    const radio = cardEl.querySelector('input[type="radio"]');
+    if (radio) radio.checked = true;
+  }
+}
+
+function accesoRapidoDemo(rolDeseado) {
+  const demo = USUARIOS_BASE.find(u => u.rol === rolDeseado);
+  if (!demo) return;
+  const elEmail = document.getElementById('authLoginEmail');
+  const elPass = document.getElementById('authLoginPassword');
+  if (elEmail) elEmail.value = demo.email;
+  if (elPass) elPass.value = demo.password;
+  iniciarSesionUsuario(null, demo.email, demo.password);
+}
+
+async function registrarUsuarioDesdePortal(event) {
+  if (event) event.preventDefault();
+
+  const nombre = document.getElementById('authRegNombre')?.value.trim();
+  const empresa = document.getElementById('authRegEmpresa')?.value.trim();
+  const email = document.getElementById('authRegEmail')?.value.trim().toLowerCase();
+  const password = document.getElementById('authRegPassword')?.value;
+  const confirmPass = document.getElementById('authRegConfirmPassword')?.value;
+
+  const rolInput = document.querySelector('input[name="authPortalRol"]:checked');
+  const rol = rolInput ? rolInput.value : 'administradora';
+
+  if (!nombre || !empresa || !email || !password) {
+    showToast('Por favor completa todos los campos requeridos.', 'warning');
+    return;
+  }
+
+  if (password !== confirmPass) {
+    showToast('Las contraseñas no coinciden.', 'warning');
+    return;
+  }
+
+  if (password.length < 6) {
+    showToast('La contraseña debe tener al menos 6 caracteres.', 'warning');
+    return;
+  }
+
+  const existente = listaUsuariosRegistrados.find(u => u.email === email)
+    || USUARIOS_BASE.find(u => u.email === email);
+  if (existente) {
+    showToast('Este correo electrónico ya está registrado. Inicia sesión.', 'warning');
+    cambiarModoAuth('login');
+    const elEmail = document.getElementById('authLoginEmail');
+    if (elEmail) elEmail.value = email;
+    return;
+  }
+
+  const puesto = (rol === 'empleado' ? 'Colaborador Operativo' : (rol === 'administradora' ? 'Directora / Administradora' : 'Soporte TI'));
+
+  const nuevoUsuario = {
+    id: Date.now(),
+    nombre,
+    empresa,
+    email,
+    password,
+    rol,
+    puesto,
+    fechaRegistro: new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' }),
+    origen: 'auto-registro',
+    esNuevo: true
+  };
+
+  listaUsuariosRegistrados.push(nuevoUsuario);
+  guardarEnStorage(StorageKey.USUARIOS, listaUsuariosRegistrados);
+
+  // Inicializar los datos del nuevo usuario COMPLETAMENTE EN CERO
+  const userKey = StorageKey.PREFIX + encodeURIComponent(email);
+  const dataCero = {
+    cuentas: [],
+    transacciones: [],
+    pagos: [],
+    empleados: [],
+    config: {
+      empresa: empresa,
+      rfc: '',
+      divisa: '$',
+      codigoDivisa: 'MXN'
+    }
+  };
+  guardarEnStorage(userKey, dataCero);
+
+  // Iniciar sesión inmediatamente con el nuevo usuario
+  localStorage.removeItem('fivecash_logged_out');
+  usuarioActual = nuevoUsuario;
+  guardarEnStorage(StorageKey.SESION_ACTIVA, usuarioActual);
+
+  listaCuentas = [];
+  listaTransacciones = [];
+  listaPagos = [];
+  listaEmpleados = [];
+  configSistema = dataCero.config;
+
+  actualizarTodo();
+  aplicarJerarquiaUI();
+
+  const textoRol = obtenerTextoRol(rol);
+  showToast(`¡Bienvenido/a ${nombre}! Cuenta de ${textoRol} creada con saldo en cero.`, 'success');
 }
 
 /**
@@ -468,16 +630,13 @@ function cerrarSesion() {
     codigoDivisa: 'MXN'
   };
 
-  // Re-renderizar toda la interfaz con jerarquía de invitado (oculta usuario/logout y muestra login/registro)
+  // Re-renderizar toda la interfaz (oculta panel y muestra formulario de acceso inmediatamente)
   actualizarTodo();
   aplicarJerarquiaUI();
   cerrarTodosLosModales();
+  cambiarModoAuth('login');
 
   showToast('Has cerrado sesión exitosamente.', 'info');
-  // Abrir ventana de inicio de sesión para conveniencia del usuario
-  setTimeout(() => {
-    openModal('modalLogin');
-  }, 150);
 }
 
 /**
@@ -2453,7 +2612,7 @@ function organizarConfiguracionesPorJerarquia(rolParam) {
     // Caso 3: 🛠️ JERARQUÍA TÉCNICO DE LA APP
     // Herramientas de diagnóstico, memoria local, mantenimiento e integridad
     if (titleEl) titleEl.innerText = '⚙️ Herramientas y Diagnóstico Técnico';
-    if (descEl) descEl.innerText = 'Auditoría de integridad relacional, optimización de almacenamiento local y activación de modo mantenimiento.';
+    if (descEl) descEl.innerText = 'Optimización de almacenamiento local, monitoreo de memoria y activación de modo mantenimiento.';
     if (badgeEl) {
       badgeEl.className = 'role-badge role-tecnico';
       badgeEl.style.backgroundColor = '';

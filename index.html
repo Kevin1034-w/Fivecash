@@ -21,6 +21,118 @@
 </head>
 <body>
 
+  <!-- ============================================================== -->
+  <!-- PANTALLA PRINCIPAL DE ACCESO / LOGIN (GATEWAY INICIAL)         -->
+  <!-- ============================================================== -->
+  <div id="authScreen" class="auth-screen-container">
+    <div class="auth-card">
+      <!-- Encabezado de Marca -->
+      <div class="auth-header">
+        <div class="auth-brand-badge">
+          <div class="auth-brand-icon">📈</div>
+          <div>
+            <div class="auth-brand-title">Five Cash</div>
+            <span class="auth-brand-sub">Suite Financiera &amp; Tesorería</span>
+          </div>
+        </div>
+        <h2 class="auth-title" id="authTitleText">Acceso a la Plataforma</h2>
+        <p class="auth-subtitle" id="authSubtitleText">Ingresa tus credenciales para acceder a tus finanzas</p>
+      </div>
+
+      <!-- Selector de Modo: Login / Registro -->
+      <div class="auth-nav-tabs">
+        <button type="button" class="auth-nav-tab active" id="tabBtnLogin" onclick="cambiarModoAuth('login')">
+          🔑 Iniciar Sesión
+        </button>
+        <button type="button" class="auth-nav-tab" id="tabBtnRegister" onclick="cambiarModoAuth('registro')">
+          ✨ Crear Cuenta
+        </button>
+      </div>
+
+      <!-- Formulario 1: Inicio de Sesión -->
+      <form id="formAuthLogin" onsubmit="iniciarSesionDesdePortal(event)">
+        <div class="form-group">
+          <label for="authLoginEmail">Correo Electrónico</label>
+          <input type="email" id="authLoginEmail" class="form-control" placeholder="admin@fivecash.com" required autocomplete="email">
+        </div>
+
+        <div class="form-group" style="margin-top: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="authLoginPassword">Contraseña</label>
+          </div>
+          <input type="password" id="authLoginPassword" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+
+        <button type="submit" class="btn btn-primary auth-submit-btn" style="margin-top: 20px; width: 100%; justify-content: center; padding: 11px;">
+          Ingresar a la Plataforma ➔
+        </button>
+      </form>
+
+      <!-- Formulario 2: Registro de Nueva Cuenta -->
+      <form id="formAuthRegistro" onsubmit="registrarUsuarioDesdePortal(event)" style="display: none;">
+        <!-- Selector de Jerarquía / Rol -->
+        <div class="form-group">
+          <label>Selecciona tu Jerarquía / Rol:</label>
+          <div class="role-selector-grid" style="margin-top: 4px;">
+            <label class="role-option-card selected" onclick="manejarCambioRolPortal('administradora', this)">
+              <input type="radio" name="authPortalRol" value="administradora" checked style="display: none;">
+              <span class="role-option-icon">👑</span>
+              <span class="role-option-title">Admin</span>
+              <span class="role-option-sub">Control total</span>
+            </label>
+            <label class="role-option-card" onclick="manejarCambioRolPortal('empleado', this)">
+              <input type="radio" name="authPortalRol" value="empleado" style="display: none;">
+              <span class="role-option-icon">📋</span>
+              <span class="role-option-title">Empleado</span>
+              <span class="role-option-sub">Turno y caja</span>
+            </label>
+            <label class="role-option-card" onclick="manejarCambioRolPortal('tecnico', this)">
+              <input type="radio" name="authPortalRol" value="tecnico" style="display: none;">
+              <span class="role-option-icon">🛠️</span>
+              <span class="role-option-title">Técnico</span>
+              <span class="role-option-sub">Monitoreo</span>
+            </label>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+          <div class="form-group">
+            <label for="authRegNombre">Nombre Completo *</label>
+            <input type="text" id="authRegNombre" class="form-control" placeholder="Ej. Ana Morales" required>
+          </div>
+          <div class="form-group">
+            <label for="authRegEmpresa">Empresa / Negocio *</label>
+            <input type="text" id="authRegEmpresa" class="form-control" placeholder="Ej. Mi Tienda S.A." required>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 10px;">
+          <label for="authRegEmail">Correo Electrónico *</label>
+          <input type="email" id="authRegEmail" class="form-control" placeholder="tu@correo.com" required autocomplete="email">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+          <div class="form-group">
+            <label for="authRegPassword">Contraseña (min. 6) *</label>
+            <input type="password" id="authRegPassword" class="form-control" placeholder="••••••••" required minlength="6" autocomplete="new-password">
+          </div>
+          <div class="form-group">
+            <label for="authRegConfirmPassword">Confirmar *</label>
+            <input type="password" id="authRegConfirmPassword" class="form-control" placeholder="••••••••" required minlength="6" autocomplete="new-password">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary auth-submit-btn" style="margin-top: 18px; width: 100%; justify-content: center; padding: 11px;">
+          Crear Cuenta e Ingresar ➔
+        </button>
+      </form>
+
+      <div class="auth-card-footer">
+        <span>🔒 Plataforma protegida y cifrada en tiempo real.</span>
+      </div>
+    </div>
+  </div>
+
   <div class="app-container">
 
     <!-- ============================================================== -->
@@ -1199,26 +1311,6 @@
         <!-- ============================================================ -->
         <div id="subtabConfigTecnico" class="subtab-config-content" style="display: none;">
           <div class="reports-layout">
-            <!-- Diagnóstico y Auditoría -->
-            <div class="card">
-              <div class="card-title">
-                <span>⚡ Auditoría de Integridad del Sistema</span>
-                <span class="tag-pill">Diagnóstico</span>
-              </div>
-              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 14px;">
-                Ejecuta una validación profunda de claves primarias, coherencia numérica en saldos y comprobación de integridad relacional.
-              </p>
-              <div style="display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;">
-                <button class="btn btn-primary btn-sm" onclick="ejecutarDiagnosticoTecnico()">
-                  ⚡ Iniciar Auditoría Completa
-                </button>
-                <button class="btn btn-secondary btn-sm" onclick="document.getElementById('techConsoleLog').innerText = 'Consola limpiada. Lista para nuevo diagnóstico.'">
-                  🧹 Limpiar Consola
-                </button>
-              </div>
-              <div id="techConsoleLog" class="tech-console-log">Esperando orden de diagnóstico... Haz clic en "Iniciar Auditoría Completa".</div>
-            </div>
-
             <!-- Monitor de Memoria y Almacenamiento -->
             <div class="card">
               <div class="card-title">
